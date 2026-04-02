@@ -1,0 +1,26 @@
+{
+  "name": "@humanagencyp/linkedin-mcp",
+  "version": "1.0.0",
+  "description": "LinkedIn MCP server — publish posts, articles, and media via the LinkedIn API",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "linkedin-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --outDir dist --clean",
+    "dev": "tsx src/index.ts",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": ["mcp", "linkedin", "hap", "ai-agents"],
+  "author": "Andreas Schadauer",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
