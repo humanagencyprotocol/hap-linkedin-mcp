@@ -26,25 +26,24 @@ function headers(): Record<string, string> {
 // ─── Profile ─────────────────────────────────────────────────────────────────
 
 export interface LinkedInProfile {
-  sub: string;
-  name: string;
-  email: string;
-  picture?: string;
+  id: string;
+  localizedFirstName: string;
+  localizedLastName: string;
   personUrn: string;
 }
 
 export async function getProfile(): Promise<LinkedInProfile> {
-  const res = await fetch(`${API_BASE}/v2/userinfo`, {
+  const res = await fetch(`${API_BASE}/v2/me`, {
     headers: { Authorization: `Bearer ${getAccessToken()}` },
   });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Failed to get profile (${res.status}): ${err}`);
   }
-  const data = await res.json() as { sub: string; name: string; email: string; picture?: string };
+  const data = await res.json() as { id: string; localizedFirstName: string; localizedLastName: string };
   return {
     ...data,
-    personUrn: `urn:li:person:${data.sub}`,
+    personUrn: `urn:li:person:${data.id}`,
   };
 }
 
