@@ -147,12 +147,17 @@ export async function createArticlePost(params: CreateArticlePostParams): Promis
 
 interface CreateImagePostParams {
   text: string;
-  imageUrl: string;
+  imageUrl?: string;
+  imagePath?: string;
   altText?: string;
   visibility?: Visibility;
 }
 
 export async function createImagePost(params: CreateImagePostParams): Promise<PostResponse> {
+  if ((!params.imageUrl && !params.imagePath) || (params.imageUrl && params.imagePath)) {
+    throw new Error('createImagePost requires exactly one of imageUrl or imagePath');
+  }
+
   const profile = await getProfile();
 
   // Step 1: Initialize image upload
@@ -175,10 +180,17 @@ export async function createImagePost(params: CreateImagePostParams): Promise<Po
     value: { uploadUrl: string; image: string };
   };
 
-  // Step 2: Download image from URL and upload to LinkedIn
-  const imageRes = await fetch(params.imageUrl);
-  if (!imageRes.ok) throw new Error(`Failed to download image from ${params.imageUrl}`);
-  const imageBuffer = await imageRes.arrayBuffer();
+  // Step 2: Load image bytes from URL (remote fetch) or local disk, then upload to LinkedIn
+  let imageBuffer: ArrayBuffer;
+  if (params.imagePath) {
+    const fs = await import('node:fs/promises');
+    const buf = await fs.readFile(params.imagePath);
+    imageBuffer = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
+  } else {
+    const imageRes = await fetch(params.imageUrl!);
+    if (!imageRes.ok) throw new Error(`Failed to download image from ${params.imageUrl}`);
+    imageBuffer = await imageRes.arrayBuffer();
+  }
 
   const uploadRes = await fetch(initData.value.uploadUrl, {
     method: 'PUT',

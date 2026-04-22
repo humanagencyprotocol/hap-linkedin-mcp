@@ -71,16 +71,23 @@ server.tool(
 
 server.tool(
   'create_image_post',
-  'Publish a post with an image to LinkedIn. Provide an image URL — the image will be uploaded to LinkedIn automatically.',
+  'Publish a post with an image to LinkedIn. Provide either an imageUrl (remote URL LinkedIn will fetch) or an imagePath (local file path the MCP will upload directly). Exactly one is required.',
   {
     text: z.string().describe('Commentary text for the post'),
-    imageUrl: z.string().url().describe('URL of the image to upload and attach'),
+    imageUrl: z.string().url().optional().describe('Remote URL of the image to upload and attach'),
+    imagePath: z.string().optional().describe('Local filesystem path to an image file (jpg/png/gif/webp). Uploaded directly.'),
     altText: z.string().optional().describe('Alt text for the image'),
     visibility: z.enum(['PUBLIC', 'CONNECTIONS']).optional().describe('Post visibility (default: PUBLIC)'),
   },
-  async ({ text, imageUrl, altText, visibility }) => {
+  async ({ text, imageUrl, imagePath, altText, visibility }) => {
+    if ((!imageUrl && !imagePath) || (imageUrl && imagePath)) {
+      return {
+        content: [{ type: 'text', text: 'Error: provide exactly one of imageUrl or imagePath.' }],
+        isError: true,
+      };
+    }
     try {
-      const result = await api.createImagePost({ text, imageUrl, altText, visibility });
+      const result = await api.createImagePost({ text, imageUrl, imagePath, altText, visibility });
       return { content: [{ type: 'text', text: `Image post published. ID: ${result.id}` }] };
     } catch (e) {
       return { content: [{ type: 'text', text: `Error: ${(e as Error).message}` }], isError: true };
