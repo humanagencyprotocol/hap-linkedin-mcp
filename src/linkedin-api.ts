@@ -33,17 +33,24 @@ export interface LinkedInProfile {
 }
 
 export async function getProfile(): Promise<LinkedInProfile> {
-  const res = await fetch(`${API_BASE}/v2/me`, {
+  // OpenID Connect userinfo — LinkedIn deprecated /v2/me + r_liteprofile. With
+  // the openid/profile scopes the member id is the `sub` claim; the author URN
+  // is urn:li:person:{sub}. (Posting still uses the w_member_social scope.)
+  const res = await fetch(`${API_BASE}/v2/userinfo`, {
     headers: { Authorization: `Bearer ${getAccessToken()}` },
   });
   if (!res.ok) {
     const err = await res.text();
     throw new Error(`Failed to get profile (${res.status}): ${err}`);
   }
-  const data = await res.json() as { id: string; localizedFirstName: string; localizedLastName: string };
+  const data = await res.json() as {
+    sub: string; name?: string; given_name?: string; family_name?: string; email?: string;
+  };
   return {
-    ...data,
-    personUrn: `urn:li:person:${data.id}`,
+    id: data.sub,
+    localizedFirstName: data.given_name ?? '',
+    localizedLastName: data.family_name ?? '',
+    personUrn: `urn:li:person:${data.sub}`,
   };
 }
 
