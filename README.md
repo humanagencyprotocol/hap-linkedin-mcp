@@ -26,7 +26,7 @@ MCP server for publishing posts, articles, and media to LinkedIn. Part of the [H
 npx @humanagencyp/linkedin-mcp
 ```
 
-Or with the HAP Gateway — add your LinkedIn credentials in the Integrations page.
+Or with Suveren's gateway — add your LinkedIn credentials on the Connectors page.
 
 ## Environment Variables
 
